@@ -16,7 +16,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/deis/deis/pkg/k8s"
+	"github.com/deis/pkg/k8s"
 
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/client/unversioned"
