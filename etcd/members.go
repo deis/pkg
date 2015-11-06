@@ -7,7 +7,7 @@ import (
 	"github.com/Masterminds/cookoo"
 	"github.com/Masterminds/cookoo/log"
 	"github.com/coreos/etcd/client"
-	"github.com/deis/deis/pkg/k8s"
+	"github.com/deis/pkg/k8s"
 
 	"k8s.io/kubernetes/pkg/labels"
 )
