@@ -1,0 +1,8 @@
+package: github.com/deis/pkg
+flatten: true
+import:
+  - package: k8s.io/kubernetes/pkg
+    version: v1.1.1
+  - package: github.com/Masterminds/cookoo
+  - package: github.com/coreos/etcd/client
+  - package: golang.org/x/net/context
