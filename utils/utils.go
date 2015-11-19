@@ -42,9 +42,8 @@ func RunCommandWithStdoutStderr(cmd *exec.Cmd) (bytes.Buffer, bytes.Buffer, erro
 
 // streamOutput from a source to a destination buffer while also printing
 func streamOutput(src io.Reader, dst *bytes.Buffer, out io.Writer) error {
-
+	mw := io.MultiWriter(dst, out)
 	s := bufio.NewReader(src)
-
 	for {
 		var line []byte
 		line, err := s.ReadSlice('\n')
@@ -58,11 +57,8 @@ func streamOutput(src io.Reader, dst *bytes.Buffer, out io.Writer) error {
 			return err
 		}
 
-		// append to the buffer
-		dst.Write(line)
-
-		// write to stdout/stderr also
-		out.Write(line)
+		// append to the buffer and out at once
+		mw.Write(line)
 	}
 
 	return nil
