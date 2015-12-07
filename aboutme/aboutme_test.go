@@ -3,6 +3,7 @@ package aboutme
 import (
 	"net"
 	"os"
+	"strings"
 	"testing"
 
 	"k8s.io/kubernetes/pkg/client/unversioned"
@@ -41,6 +42,57 @@ func TestShuntEnv(t *testing.T) {
 	if "c" != os.Getenv("MY_NAME") {
 		t.Errorf("Expected 'c', got '%s'", os.Getenv("MY_NAME"))
 	}
+}
+
+func TestMyIPLocal(t *testing.T) {
+	// This version does not require running inside of k8s.
+	ip, _ := MyIP()
+	if len(ip) == 0 {
+		t.Error("Expected a string, got empty")
+	}
+	octets := strings.Split(ip, ".")
+	if len(octets) != 4 {
+		t.Errorf("Expected 4 octets, got %d", len(octets))
+	}
+}
+
+func TestByInterfaceEth0(t *testing.T) {
+	if _, err := net.InterfaceByName("eth0"); err != nil {
+		t.Skip("Host operating system does not have an eth0 device to test.")
+	}
+
+	ip, err := IPByInterface("eth0")
+	if err != nil {
+		t.Errorf("Failed to get eth0: %s", err)
+	}
+	if len(ip) == 0 {
+		t.Error("IP address is empty.")
+	}
+
+	if ip == "0.0.0.0" {
+		t.Error("Got generic IP instead of real one.")
+	}
+
+}
+
+func TestByInterfaceEn0(t *testing.T) {
+	// This works on most Macs.
+	if _, err := net.InterfaceByName("en0"); err != nil {
+		t.Skip("Host operating system does not have an en0 device to test.")
+	}
+
+	ip, err := IPByInterface("en0")
+	if err != nil {
+		t.Errorf("Failed to get en0: %s", err)
+	}
+	if len(ip) == 0 {
+		t.Error("IP address is empty.")
+	}
+
+	if ip == "0.0.0.0" {
+		t.Error("Got generic IP instead of real one.")
+	}
+
 }
 
 func TestMyIP(t *testing.T) {
