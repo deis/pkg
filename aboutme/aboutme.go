@@ -24,6 +24,20 @@ import (
 	"k8s.io/kubernetes/pkg/labels"
 )
 
+// DefaultNamespace is the Kubernetes default namespace.
+const DefaultNamespace = "default"
+
+var (
+	// EnvNamespace is the environment variable this looks for to get the namespace.
+	//
+	// You can set this via the Downward API.
+	EnvNamespace = "POD_NAMESPACE"
+	// EnvName is the environment variable this looks for to get the pod name.
+	//
+	// You can set this via the Downward API.
+	EnvName = "POD_NAME"
+)
+
 type Me struct {
 	ApiServer, Name                      string
 	IP, NodeIP, Namespace, SelfLink, UID string
@@ -42,7 +56,7 @@ func FromEnv() (*Me, error) {
 
 	host := os.Getenv("KUBERNETES_SERVICE_HOST")
 	port := os.Getenv("KUBERNETES_SERVICE_PORT")
-	name := os.Getenv("HOSTNAME")
+	name := NameFromEnv()
 
 	// FIXME: Better way? Probably scanning secrets for
 	// an SSL cert would help?
@@ -53,10 +67,7 @@ func FromEnv() (*Me, error) {
 	me := &Me{
 		ApiServer: url,
 		Name:      name,
-
-		// FIXME: This is a chicken-and-egg problem. We need the namespace
-		// to get pod info, and we can only get info from the pod.
-		Namespace: "default",
+		Namespace: NamespaceFromEnv(),
 	}
 
 	client, err := k8s.PodClient()
@@ -73,6 +84,27 @@ func FromEnv() (*Me, error) {
 // Client returns an initialized Kubernetes API client.
 func (me *Me) Client() *unversioned.Client {
 	return me.c
+}
+
+// NameFromEnv gets the pod name from either the Downward API or the hostname.
+func NameFromEnv() string {
+	n := os.Getenv(EnvName)
+	if n == "" {
+		return os.Getenv("HOSTNAME")
+	}
+	return n
+}
+
+//NamespaceFromEnv attempts to get the namespace from the downward API.
+//
+// If EnvNamespace is not set, or if the name is not recovered from the
+// environment, then the DefaultNamespace is used.
+func NamespaceFromEnv() string {
+	ns := os.Getenv(EnvNamespace)
+	if ns == "" {
+		return DefaultNamespace
+	}
+	return ns
 }
 
 // ShuntEnv puts the Me object into the environment.
@@ -108,7 +140,7 @@ func (me *Me) ShuntEnv() {
 }
 
 func (me *Me) init() error {
-	p, n, err := me.findPodInNamespaces()
+	p, n, err := me.loadPod()
 	if err != nil {
 		return err
 	}
@@ -125,7 +157,7 @@ func (me *Me) init() error {
 	// PodIP, even though the pod is issued an IP. We need to figure out why,
 	// and if this is an expected case. In the meantime, we get the IP by
 	// scanning interfaces.
-	if me.IP == "" {
+	if strings.TrimSpace(me.IP) == "" {
 		// We swallow the error, letting me.IP set the interface address to
 		// 0.0.0.0.
 		me.IP, _ = MyIP()
@@ -134,17 +166,22 @@ func (me *Me) init() error {
 	return nil
 }
 
+// loadPod loads a pod using the downward API.
+func (me *Me) loadPod() (*api.Pod, string, error) {
+	ns := NamespaceFromEnv()
+	p, err := me.c.Pods(ns).Get(me.Name)
+	return p, ns, err
+}
+
 // findPodInNamespaces searches relevant namespaces for this pod.
 //
 // It returns a PodInterface for working with the pod, a namespace name as a
 // string, and an error if something goes wrong.
 //
-// The search pattern is to look for namespaces that have the "deis" name in
-// their labels, and then to fall back to default. We don't look at all
-// namespaces.
-func (me *Me) findPodInNamespaces() (*api.Pod, string, error) {
+// The selector must be a label selector.
+func (me *Me) findPodInNamespaces(selector string) (*api.Pod, string, error) {
 	// Get the deis namespace. If it does not exist, get the default namespce.
-	s, err := labels.Parse("name=deis")
+	s, err := labels.Parse(selector)
 	if err == nil {
 		ns, err := me.c.Namespaces().List(s, nil)
 		if err != nil {
