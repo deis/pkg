@@ -23,6 +23,28 @@ func TestFromEnv(t *testing.T) {
 	}
 }
 
+func TestNamespaceFromEnv(t *testing.T) {
+	if ns := NamespaceFromEnv(); ns != DefaultNamespace {
+		t.Errorf("You did something stupid.")
+	}
+
+	os.Setenv(EnvNamespace, "slurm")
+	if ns := NamespaceFromEnv(); ns != "slurm" {
+		t.Errorf("Expected slurm, got %q", ns)
+	}
+}
+
+func TestNameFromEnv(t *testing.T) {
+	os.Setenv("HOSTNAME", "example")
+	if n := NameFromEnv(); n != "example" {
+		t.Errorf("Expected example, got %q", n)
+	}
+	os.Setenv(EnvName, "slumber")
+	if n := NameFromEnv(); n != "slumber" {
+		t.Errorf("Expected slumber, got %s", n)
+	}
+}
+
 func TestShuntEnv(t *testing.T) {
 	e := &Me{
 		Annotations: map[string]string{"a": "a"},
