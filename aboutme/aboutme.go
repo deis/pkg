@@ -12,6 +12,7 @@ package aboutme
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"os"
 	"strings"
@@ -120,6 +121,16 @@ func (me *Me) init() error {
 	me.Labels = p.Labels
 	me.Annotations = me.Annotations
 
+	// FIXME: It appears that sometimes the k8s API server does not set the
+	// PodIP, even though the pod is issued an IP. We need to figure out why,
+	// and if this is an expected case. In the meantime, we get the IP by
+	// scanning interfaces.
+	if me.IP == "" {
+		// We swallow the error, letting me.IP set the interface address to
+		// 0.0.0.0.
+		me.IP, _ = MyIP()
+	}
+
 	return nil
 }
 
@@ -164,7 +175,21 @@ func (me *Me) findPodInNamespaces() (*api.Pod, string, error) {
 // Because this queries the interfaces, not the Kube API server, this could,
 // in theory, return an IP address different from Me.IP.
 func MyIP() (string, error) {
-	iface, err := net.InterfaceByName("eth0")
+
+	maxIface := 5
+	var err error
+	for i := 0; i < maxIface; i++ {
+		var ip string
+		ip, err = IPByInterface(fmt.Sprintf("eth%d", i))
+		if err == nil {
+			return ip, nil
+		}
+	}
+
+	return "0.0.0.0", err
+}
+func IPByInterface(name string) (string, error) {
+	iface, err := net.InterfaceByName(name)
 	if err != nil {
 		return "", err
 	}
