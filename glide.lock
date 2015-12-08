@@ -1,16 +1,12 @@
 hash: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-updated: 2015-12-07T16:40:23.683754075-07:00
+updated: 2015-12-08T09:39:02.750779896-07:00
 imports:
-- name: appengine
-  version: ""
-  repo: https://appengine
 - name: bitbucket.org/bertimus9/systemstat
   version: 1468fd0db20598383c9393cccaa547de6ad99e5e
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c
 - name: code.google.com/p/go-charset
   version: ebbeafdc430e
-  repo: https://code.google.com/p/go-charset
 - name: code.google.com/p/go-uuid
   version: 7dda39b2e7d5
   subpackages:
@@ -136,7 +132,6 @@ imports:
   - unit
 - name: github.com/coreos/gexpect
   version: 5173270e159f5aa8fbc999dc7e3dcb50f4098a69
-  repo: https://github.com/coreos/gexpect
 - name: github.com/coreos/go-etcd
   version: 4cceaf7283b76f27c4a732b20730dcdb61053bf5
   subpackages:
@@ -347,7 +342,6 @@ imports:
   version: 6633656539c1639d9d78127b7d47c622b5d7b6dc
 - name: github.com/inconshreveable/go-vhost
   version: 8cbc5089df5ba3e44644d39e8d1ec375d6d842f9
-  repo: https://github.com/inconshreveable/go-vhost
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/inconshreveable/muxado
@@ -595,9 +589,7 @@ imports:
   subpackages:
   - api/v1/types
 - name: k8s.io/kubernetes
-  version: 6a81b50c7e97bbe0ade075de55ab4fa34f049dc2
-  subpackages:
-  - pkg
+  version: 8dec957e4bba8b1260995d525a8260e03acbc181
 - name: launchpad.net/gocheck
   version: 11d3bc7aa68e238947792f30573146a3231fc0f1
   repo: https://github.com/go-check/check
