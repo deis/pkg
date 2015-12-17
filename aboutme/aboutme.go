@@ -53,7 +53,6 @@ type Me struct {
 // a combination of environment variables and file paths to determine
 // information about the cluster.
 func FromEnv() (*Me, error) {
-
 	host := os.Getenv("KUBERNETES_SERVICE_HOST")
 	port := os.Getenv("KUBERNETES_SERVICE_PORT")
 	name := NameFromEnv()
@@ -76,7 +75,9 @@ func FromEnv() (*Me, error) {
 	}
 	me.c = client
 
-	me.init()
+	if err := me.init(); err != nil {
+		return me, err
+	}
 
 	return me, nil
 }
