@@ -1,5 +1,5 @@
 hash: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-updated: 2015-12-08T09:39:02.750779896-07:00
+updated: 2016-01-04T15:14:44.330423153-08:00
 imports:
 - name: bitbucket.org/bertimus9/systemstat
   version: 1468fd0db20598383c9393cccaa547de6ad99e5e
@@ -374,6 +374,11 @@ imports:
   version: 05017fcccf23c823bfdea560dcc958a136e54fb7
 - name: github.com/kr/text
   version: 6807e777504f54ad073ecef66747de158294b639
+- name: github.com/labstack/gommon
+  version: ""
+  repo: https://github.com/labstack/gommon/color
+  subpackages:
+  - color
 - name: github.com/lsegal/gucumber
   version: e8116c9c66e641e9f81fc0a79fac923dfc646378
 - name: github.com/Masterminds/cookoo
