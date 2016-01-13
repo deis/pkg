@@ -7,7 +7,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/labstack/gommon/color"
+	"github.com/deis/pkg/prettyprint"
 )
 
 // Stdout is the logging destination for normal messages.
@@ -19,16 +19,48 @@ var Stderr io.Writer = os.Stderr
 // IsDebugging toggles whether or not to enable debug output and behavior.
 var IsDebugging = false
 
+// Color is the representation of a color, to be used in Colorize
+type Color string
+
+// String is the fmt.Stringer interface implementation
+func (c Color) String() string {
+	return string(c)
+}
+
+var (
+	// Default resets the console color
+	Default = Color(prettyprint.Colors["Default"])
+	// Red sets the console color to red
+	Red = Color(prettyprint.Colors["Red"])
+	// Cyan sets the console color to cyan
+	Cyan = Color(prettyprint.Colors["Cyan"])
+	// Yellow sets the console color to yellow
+	Yellow = Color(prettyprint.Colors["Yellow"])
+	// Green sets the console color to green
+	Green = Color(prettyprint.Colors["Green"])
+)
+
+type Logger struct {
+	stdout io.Writer
+	stderr io.Writer
+}
+
+func NewLogger(stdout, stderr io.Writer) *Logger {
+	return &Logger{stdout: stdout, stderr: stderr}
+}
+
+var defaultLogger = &Logger{stdout: os.Stdout, stderr: os.Stderr}
+
 // Msg passes through the formatter, but otherwise prints exactly as-is.
 //
 // No prettification.
-func Msg(format string, v ...interface{}) {
-	fmt.Fprintf(Stdout, appendNewLine(format), v...)
+func (l *Logger) Msg(format string, v ...interface{}) {
+	fmt.Fprintf(l.stdout, appendNewLine(format), v...)
 }
 
 // Die prints an error and then call os.Exit(1).
-func Die(format string, v ...interface{}) {
-	Err(format, v...)
+func (l *Logger) Die(format string, v ...interface{}) {
+	l.Err(format, v...)
 	if IsDebugging {
 		panic(fmt.Sprintf(format, v...))
 	}
@@ -36,37 +68,41 @@ func Die(format string, v ...interface{}) {
 }
 
 // CleanExit prints a message and then exits with 0.
-func CleanExit(format string, v ...interface{}) {
-	Info(format, v...)
+func (l *Logger) CleanExit(format string, v ...interface{}) {
+	l.Info(format, v...)
 	os.Exit(0)
 }
 
 // Err prints an error message. It does not cause an exit.
-func Err(format string, v ...interface{}) {
-	fmt.Fprint(Stderr, color.Red("[ERROR] "))
+func (l *Logger) Err(format string, v ...interface{}) {
+	fmt.Fprint(Stderr, addColor("[ERROR] ", Red))
 	fmt.Fprintf(Stderr, appendNewLine(format), v...)
 }
 
 // Info prints a green-tinted message.
-func Info(format string, v ...interface{}) {
-	fmt.Fprint(Stderr, "---> ")
-	fmt.Fprintf(Stderr, appendNewLine(format), v...)
+func (l *Logger) Info(format string, v ...interface{}) {
+	fmt.Fprint(l.stderr, addColor("---> ", Green))
+	fmt.Fprintf(l.stderr, appendNewLine(format), v...)
 }
 
 // Debug prints a cyan-tinted message if IsDebugging is true.
-func Debug(msg string, v ...interface{}) {
+func (l *Logger) Debug(msg string, v ...interface{}) {
 	if IsDebugging {
-		fmt.Fprint(Stderr, color.Cyan("[DEBUG] "))
-		Msg(msg, v...)
+		fmt.Fprint(l.stderr, addColor("[DEBUG] ", Cyan))
+		l.Msg(msg, v...)
 	}
 }
 
 // Warn prints a yellow-tinted warning message.
-func Warn(format string, v ...interface{}) {
-	fmt.Fprint(Stderr, color.Yellow("[WARN] "))
-	Msg(format, v...)
+func (l *Logger) Warn(format string, v ...interface{}) {
+	fmt.Fprint(l.stderr, addColor("[WARN] ", Yellow))
+	l.Msg(format, v...)
 }
 
 func appendNewLine(format string) string {
 	return format + "\n"
+}
+
+func addColor(str string, color Color) string {
+	return prettyprint.Colorize(fmt.Sprintf("{{.%s}}%s{{.%s}}", color.String(), str, Default.String()))
 }
