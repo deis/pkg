@@ -40,6 +40,13 @@ var (
 	Green = Color(prettyprint.Colors["Green"])
 )
 
+const (
+	DebugPrefix = "[DEBUG]"
+	ErrorPrefix = "[ERROR]"
+	WarnPrefix  = "[WARN]"
+	InfoPrefix  = "--->"
+)
+
 // Logger is the base logging struct from which all logging functionality stems
 type Logger struct {
 	stdout io.Writer
@@ -98,7 +105,7 @@ func CleanExit(format string, v ...interface{}) {
 
 // Err prints an error message. It does not cause an exit.
 func (l *Logger) Err(format string, v ...interface{}) {
-	fmt.Fprint(Stderr, addColor("[ERROR] ", Red))
+	fmt.Fprint(Stderr, addColor(ErrorPrefix+" ", Red))
 	fmt.Fprintf(Stderr, appendNewLine(format), v...)
 }
 
@@ -107,10 +114,10 @@ func Err(format string, v ...interface{}) {
 	DefaultLogger.Err(format, v...)
 }
 
-// Info prints a green-tinted message.
+// Info prints a green-tinted message
 func (l *Logger) Info(format string, v ...interface{}) {
-	fmt.Fprint(l.stderr, addColor("---> ", Green))
-	fmt.Fprintf(l.stderr, appendNewLine(format), v...)
+	fmt.Fprint(l.stderr, addColor(InfoPrefix+" ", Green))
+	fmt.Fprintf(l.stdout, appendNewLine(format), v...)
 }
 
 // Info is a convenience function for DefaultLogger.Info(...)
@@ -121,7 +128,7 @@ func Info(format string, v ...interface{}) {
 // Debug prints a cyan-tinted message if IsDebugging is true.
 func (l *Logger) Debug(msg string, v ...interface{}) {
 	if l.debug {
-		fmt.Fprint(l.stderr, addColor("[DEBUG] ", Cyan))
+		fmt.Fprint(l.stderr, addColor(DebugPrefix+" ", Cyan))
 		l.Msg(msg, v...)
 	}
 }
@@ -133,7 +140,7 @@ func Debug(msg string, v ...interface{}) {
 
 // Warn prints a yellow-tinted warning message.
 func (l *Logger) Warn(format string, v ...interface{}) {
-	fmt.Fprint(l.stderr, addColor("[WARN] ", Yellow))
+	fmt.Fprint(l.stderr, addColor(WarnPrefix+" ", Yellow))
 	l.Msg(format, v...)
 }
 
