@@ -40,22 +40,35 @@ var (
 	Green = Color(prettyprint.Colors["Green"])
 )
 
+// Logger is the base logging struct from which all logging functionality stems
 type Logger struct {
 	stdout io.Writer
 	stderr io.Writer
+	debug  bool
 }
 
-func NewLogger(stdout, stderr io.Writer) *Logger {
-	return &Logger{stdout: stdout, stderr: stderr}
+// NewLogger creates a new logger bound to a stdout and stderr writer, which are most commonly os.Stdout and os.Stderr, respectively
+func NewLogger(stdout, stderr io.Writer, debug bool) *Logger {
+	return &Logger{stdout: stdout, stderr: stderr, debug: debug}
 }
 
-var defaultLogger = &Logger{stdout: os.Stdout, stderr: os.Stderr}
+// DefaultLogger is the default logging implementation. It's used in all top level funcs inside the log package, and represents the equivalent of NewLogger(os.Stdout, os.Stderr)
+var DefaultLogger *Logger
+
+func init() {
+	DefaultLogger = &Logger{stdout: Stdout, stderr: Stderr, debug: IsDebugging}
+}
 
 // Msg passes through the formatter, but otherwise prints exactly as-is.
 //
 // No prettification.
 func (l *Logger) Msg(format string, v ...interface{}) {
 	fmt.Fprintf(l.stdout, appendNewLine(format), v...)
+}
+
+// Msg is a convenience function for DefaultLogger.Msg(...)
+func Msg(format string, v ...interface{}) {
+	DefaultLogger.Msg(format, v)
 }
 
 // Die prints an error and then call os.Exit(1).
@@ -67,10 +80,20 @@ func (l *Logger) Die(format string, v ...interface{}) {
 	os.Exit(1)
 }
 
+// Die is a convenience function for DefaultLogger.Die(...)
+func Die(format string, v ...interface{}) {
+	DefaultLogger.Die(format, v...)
+}
+
 // CleanExit prints a message and then exits with 0.
 func (l *Logger) CleanExit(format string, v ...interface{}) {
 	l.Info(format, v...)
 	os.Exit(0)
+}
+
+// CleanExit is a convenience function for DefaultLogger.CleanExit(...)
+func CleanExit(format string, v ...interface{}) {
+	DefaultLogger.CleanExit(format, v...)
 }
 
 // Err prints an error message. It does not cause an exit.
@@ -79,18 +102,33 @@ func (l *Logger) Err(format string, v ...interface{}) {
 	fmt.Fprintf(Stderr, appendNewLine(format), v...)
 }
 
+// Err is a convenience function for DefaultLogger.Err(...)
+func Err(format string, v ...interface{}) {
+	DefaultLogger.Err(format, v...)
+}
+
 // Info prints a green-tinted message.
 func (l *Logger) Info(format string, v ...interface{}) {
 	fmt.Fprint(l.stderr, addColor("---> ", Green))
 	fmt.Fprintf(l.stderr, appendNewLine(format), v...)
 }
 
+// Info is a convenience function for DefaultLogger.Info(...)
+func Info(format string, v ...interface{}) {
+	DefaultLogger.Info(format, v...)
+}
+
 // Debug prints a cyan-tinted message if IsDebugging is true.
 func (l *Logger) Debug(msg string, v ...interface{}) {
-	if IsDebugging {
+	if l.debug {
 		fmt.Fprint(l.stderr, addColor("[DEBUG] ", Cyan))
 		l.Msg(msg, v...)
 	}
+}
+
+// Debug is a convenience function for DefaultLogger.Debug(...)
+func Debug(msg string, v ...interface{}) {
+	DefaultLogger.Debug(msg, v...)
 }
 
 // Warn prints a yellow-tinted warning message.
@@ -99,10 +137,15 @@ func (l *Logger) Warn(format string, v ...interface{}) {
 	l.Msg(format, v...)
 }
 
+// Warn is a convenience function for DefaultLogger.Warn(...)
+func Warn(format string, v ...interface{}) {
+	DefaultLogger.Warn(format, v...)
+}
+
 func appendNewLine(format string) string {
 	return format + "\n"
 }
 
 func addColor(str string, color Color) string {
-	return prettyprint.Colorize(fmt.Sprintf("{{.%s}}%s{{.%s}}", color.String(), str, Default.String()))
+	return prettyprint.Colorize(fmt.Sprintf("%s%s%s", color.String(), str, Default.String()))
 }
