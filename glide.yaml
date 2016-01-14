@@ -20,3 +20,4 @@ import:
   repo: https://github.com/golang/protobuf
 - package: launchpad.net/gocheck
   repo: https://github.com/go-check/check
+- package: github.com/arschles/assert
