@@ -10,15 +10,6 @@ import (
 	"github.com/deis/pkg/prettyprint"
 )
 
-// Stdout is the logging destination for normal messages.
-var Stdout io.Writer = os.Stdout
-
-// Stderr is the logging destination for error messages.
-var Stderr io.Writer = os.Stderr
-
-// IsDebugging toggles whether or not to enable debug output and behavior.
-var IsDebugging = false
-
 // Color is the representation of a color, to be used in Colorize
 type Color string
 
@@ -60,7 +51,7 @@ func NewLogger(stdout, stderr io.Writer, debug bool) *Logger {
 }
 
 // DefaultLogger is the default logging implementation. It's used in all top level funcs inside the log package, and represents the equivalent of NewLogger(os.Stdout, os.Stderr)
-var DefaultLogger *Logger
+var DefaultLogger = &Logger{stdout: os.Stdout, stderr: os.Stderr, debug: false}
 
 func init() {
 	DefaultLogger = &Logger{stdout: Stdout, stderr: Stderr, debug: IsDebugging}
