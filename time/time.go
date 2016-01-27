@@ -3,11 +3,11 @@ package time
 import "time"
 
 // DeisDatetimeFormat is the standard date/time representation used in Deis.
-const DeisDatetimeFormat string = "2006-01-02T15:04:05MST"
+const DeisDatetimeFormat = "2006-01-02T15:04:05MST"
 
 // Different format to deal with the pyopenssl formatting
 // http://www.pyopenssl.org/en/stable/api/crypto.html#OpenSSL.crypto.X509.get_notAfter
-const PyOpenSSLTimeDateTimeFormat string = "2006-01-02T15:04:05"
+const PyOpenSSLTimeDateTimeFormat = "2006-01-02T15:04:05"
 
 // Time represents the standard datetime format used across the Deis Platform.
 type Time struct {
