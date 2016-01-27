@@ -1,19 +1,39 @@
 package time
 
 import (
+	"fmt"
 	"testing"
 )
 
 func TestUnMarshalText(t *testing.T) {
 	dummyTime := Time{}
 
-	goodTimeFormats := []string{
+	standardTimeFormats := []string{
 		"2006-01-02T15:04:05MST",
-		"2006-01-02T15:04:05",
+		"2006-01-02T15:04:05UTC",
+		"2006-01-02T15:04:05PST",
 	}
-	for _, goodTime := range goodTimeFormats {
+	for _, goodTime := range standardTimeFormats {
 		if dummyTime.UnmarshalText([]byte(goodTime)) != nil {
 			t.Error("expected " + goodTime + " to be marshal-able.")
+		}
+		if dummyTime.Year() != 2006 {
+			t.Error(fmt.Sprintf("expected year to be 2006; got %d.", dummyTime.Year()))
+		}
+	}
+
+	alternateTimeFormats := []string{
+		"2007-01-02T15:04:05",
+		"2007-01-02T15:04:05",
+		"2007-01-02T15:04:05",
+	}
+
+	for _, goodTime := range alternateTimeFormats {
+		if dummyTime.UnmarshalText([]byte(goodTime)) != nil {
+			t.Error("expected " + goodTime + " to be marshal-able.")
+		}
+		if dummyTime.Year() != 2007 {
+			t.Error(fmt.Sprintf("expected year to be 2007; got %d.", dummyTime.Year()))
 		}
 	}
 

@@ -11,17 +11,17 @@ const PyOpenSSLTimeDateTimeFormat = "2006-01-02T15:04:05"
 
 // Time represents the standard datetime format used across the Deis Platform.
 type Time struct {
-	time.Time
+	*time.Time
 }
 
 func (t *Time) format() string {
-	return t.Time.Format(DeisDatetimeFormat)
+	return t.Format(DeisDatetimeFormat)
 }
 
 // MarshalJSON implements the json.Marshaler interface.
 // The time is a quoted string in Deis' datetime format.
 func (t *Time) MarshalJSON() ([]byte, error) {
-	return []byte(t.Time.Format(`"` + DeisDatetimeFormat + `"`)), nil
+	return []byte(t.Format(`"` + DeisDatetimeFormat + `"`)), nil
 }
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface.
@@ -31,7 +31,7 @@ func (t *Time) UnmarshalText(data []byte) error {
 	if _, ok := err.(*time.ParseError); ok {
 		tt, err = time.Parse(PyOpenSSLTimeDateTimeFormat, string(data))
 	}
-	*t = Time{tt}
+	*t = Time{&tt}
 	return err
 }
 
@@ -43,6 +43,6 @@ func (t *Time) UnmarshalJSON(data []byte) error {
 	if _, ok := err.(*time.ParseError); ok {
 		tt, err = time.Parse(`"`+PyOpenSSLTimeDateTimeFormat+`"`, string(data))
 	}
-	*t = Time{tt}
+	*t = Time{&tt}
 	return err
 }
