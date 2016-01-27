@@ -6,7 +6,7 @@ import (
 
 func TestUnMarshalText(t *testing.T) {
 	dummyTime := Time{}
-	
+
 	goodTimeFormats := []string{
 		"2006-01-02T15:04:05MST",
 		"2006-01-02T15:04:05",
