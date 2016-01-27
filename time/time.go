@@ -27,7 +27,7 @@ func (t *Time) MarshalJSON() ([]byte, error) {
 // The time is expected to be in Deis' datetime format.
 func (t *Time) UnmarshalText(data []byte) (err error) {
 	tt, err := time.Parse(DeisDatetimeFormat, string(data))
-	if err != nil {
+	if _, ok := err.(*time.ParseError); ok {
 		tt, err = time.Parse(PyOpenSSLTimeDateTimeFormat, string(data))
 	}
 	*t = Time{tt}
@@ -39,7 +39,7 @@ func (t *Time) UnmarshalText(data []byte) (err error) {
 func (t *Time) UnmarshalJSON(data []byte) (err error) {
 	// Fractional seconds are handled implicitly by Parse.
 	tt, err := time.Parse(`"`+DeisDatetimeFormat+`"`, string(data))
-	if err != nil {
+	if _, ok := err.(*time.ParseError); ok {
 		tt, err = time.Parse(`"`+PyOpenSSLTimeDateTimeFormat+`"`, string(data))
 	}
 	*t = Time{tt}
