@@ -3,7 +3,10 @@ package time
 import "time"
 
 // DeisDatetimeFormat is the standard date/time representation used in Deis.
-const DeisDatetimeFormat string = "2006-01-02T15:04:05MST"
+const DeisDatetimeFormat  string = "2006-01-02T15:04:05MST"
+// Different format to deal with the pyopenssl formatting
+// http://www.pyopenssl.org/en/stable/api/crypto.html#OpenSSL.crypto.X509.get_notAfter
+const PyOpenSSLTimeDateTimeFormat string = "2006-01-02T15:04:05"
 
 // Time represents the standard datetime format used across the Deis Platform.
 type Time struct {
@@ -24,6 +27,9 @@ func (t *Time) MarshalJSON() ([]byte, error) {
 // The time is expected to be in Deis' datetime format.
 func (t *Time) UnmarshalText(data []byte) (err error) {
 	tt, err := time.Parse(DeisDatetimeFormat, string(data))
+	if err != nil {
+		tt, err = time.Parse(PyOpenSSLTimeDateTimeFormat, string(data))
+	}
 	*t = Time{tt}
 	return
 }
@@ -33,6 +39,9 @@ func (t *Time) UnmarshalText(data []byte) (err error) {
 func (t *Time) UnmarshalJSON(data []byte) (err error) {
 	// Fractional seconds are handled implicitly by Parse.
 	tt, err := time.Parse(`"`+DeisDatetimeFormat+`"`, string(data))
+	if err != nil {
+		tt, err = time.Parse(`"`+PyOpenSSLTimeDateTimeFormat+`"`, string(data))
+	}
 	*t = Time{tt}
 	return
 }
