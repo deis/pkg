@@ -14,6 +14,8 @@ VERSION := 0.0.1-$(shell date "+%Y%m%d%H%M%S")
 # Common flags passed into Go's linker.
 LDFLAGS := "-s -X main.version=${VERSION}"
 
+TEST_PACKAGES := $(shell glide nv)
+
 all: build test
 
 # This builds .a files, which will be placed in $GOPATH/pkg
@@ -21,7 +23,7 @@ build:
 	go build ./...
 
 test:
-	go test $(shell glide nv)
+	go test ${TEST_PACKAGES}
 
 
 .PHONY: all build test
