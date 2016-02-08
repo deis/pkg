@@ -73,7 +73,7 @@ func Msg(format string, v ...interface{}) {
 // Die prints an error and then call os.Exit(1).
 func (l *Logger) Die(format string, v ...interface{}) {
 	l.Err(format, v...)
-	if IsDebugging {
+	if l.debug {
 		panic(fmt.Sprintf(format, v...))
 	}
 	os.Exit(1)
@@ -97,8 +97,8 @@ func CleanExit(format string, v ...interface{}) {
 
 // Err prints an error message. It does not cause an exit.
 func (l *Logger) Err(format string, v ...interface{}) {
-	fmt.Fprint(Stderr, addColor(ErrorPrefix+" ", Red))
-	fmt.Fprintf(Stderr, appendNewLine(format), v...)
+	fmt.Fprint(l.stderr, addColor(ErrorPrefix+" ", Red))
+	fmt.Fprintf(l.stderr, appendNewLine(format), v...)
 }
 
 // Err is a convenience function for DefaultLogger.Err(...)
@@ -117,7 +117,7 @@ func Info(format string, v ...interface{}) {
 	DefaultLogger.Info(format, v...)
 }
 
-// Debug prints a cyan-tinted message if IsDebugging is true.
+// Debug prints a cyan-tinted message if debug logs are on.
 func (l *Logger) Debug(msg string, v ...interface{}) {
 	if l.debug {
 		fmt.Fprint(l.stderr, addColor(DebugPrefix+" ", Cyan))
