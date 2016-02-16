@@ -27,9 +27,12 @@ func (t *Time) MarshalJSON() ([]byte, error) {
 // UnmarshalText implements the encoding.TextUnmarshaler interface.
 // The time is expected to be in Deis' datetime format.
 func (t *Time) UnmarshalText(data []byte) error {
-	tt, err := time.Parse(DeisDatetimeFormat, string(data))
+	tt, err := time.Parse(time.RFC3339, string(data))
 	if _, ok := err.(*time.ParseError); ok {
-		tt, err = time.Parse(PyOpenSSLTimeDateTimeFormat, string(data))
+		tt, err = time.Parse(DeisDatetimeFormat, string(data))
+		if _, ok := err.(*time.ParseError); ok {
+			tt, err = time.Parse(PyOpenSSLTimeDateTimeFormat, string(data))
+		}
 	}
 	*t = Time{&tt}
 	return err
@@ -39,9 +42,12 @@ func (t *Time) UnmarshalText(data []byte) error {
 // The time is expected to be a quoted string in Deis' datetime format.
 func (t *Time) UnmarshalJSON(data []byte) error {
 	// Fractional seconds are handled implicitly by Parse.
-	tt, err := time.Parse(`"`+DeisDatetimeFormat+`"`, string(data))
+	tt, err := time.Parse(`"`+time.RFC3339+`"`, string(data))
 	if _, ok := err.(*time.ParseError); ok {
-		tt, err = time.Parse(`"`+PyOpenSSLTimeDateTimeFormat+`"`, string(data))
+		tt, err = time.Parse(`"`+DeisDatetimeFormat+`"`, string(data))
+		if _, ok := err.(*time.ParseError); ok {
+			tt, err = time.Parse(`"`+PyOpenSSLTimeDateTimeFormat+`"`, string(data))
+		}
 	}
 	*t = Time{&tt}
 	return err

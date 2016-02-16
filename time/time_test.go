@@ -12,6 +12,7 @@ func TestUnMarshalText(t *testing.T) {
 		"2006-01-02T15:04:05MST",
 		"2006-01-02T15:04:05UTC",
 		"2006-01-02T15:04:05PST",
+		"2006-01-02T15:04:05Z",
 	}
 	for _, goodTime := range standardTimeFormats {
 		if dummyTime.UnmarshalText([]byte(goodTime)) != nil {
