@@ -22,8 +22,18 @@ all: build test
 build:
 	go build ${NV_PKGS}
 
-test:
+test: test-style
 	go test ${NV_PKGS}
 
+test-style:
+	@if [ $(shell gofmt -e -l -s $(GO_PACKAGES)) ]; then \
+		echo "gofmt check failed:"; gofmt -e -d -s $(GO_PACKAGES); exit 1; \
+	fi
+	@for i in . $(GO_PACKAGES); do \
+		golint $$i; \
+	done
+	@for i in . $(GO_PACKAGES); do \
+		go vet github.com/deis/pkg/$$i; \
+	done
 
 .PHONY: all build test
