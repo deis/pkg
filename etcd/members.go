@@ -8,6 +8,7 @@ import (
 	"github.com/Masterminds/cookoo/log"
 	"github.com/coreos/etcd/client"
 	"github.com/deis/pkg/k8s"
+	"k8s.io/kubernetes/pkg/api"
 
 	"k8s.io/kubernetes/pkg/labels"
 )
@@ -123,7 +124,7 @@ func RemoveStaleMembers(c cookoo.Context, p *cookoo.Params) (interface{}, cookoo
 		log.Errf(c, "Selector failed to parse: %s", err)
 		return nil, err
 	}
-	pods, err := klient.Pods(ns).List(labelSelector, nil)
+	pods, err := klient.Pods(ns).List(api.ListOptions{LabelSelector: labelSelector})
 	if err != nil {
 		return nil, err
 	}
