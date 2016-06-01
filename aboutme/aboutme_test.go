@@ -6,11 +6,11 @@ import (
 	"strings"
 	"testing"
 
-	"k8s.io/kubernetes/pkg/client/unversioned"
+	"k8s.io/kubernetes/pkg/client/restclient"
 )
 
 func TestFromEnv(t *testing.T) {
-	if _, err := unversioned.InClusterConfig(); err != nil {
+	if _, err := restclient.InClusterConfig(); err != nil {
 		t.Skip("This can only be run inside Kubernetes. Skipping.")
 	}
 

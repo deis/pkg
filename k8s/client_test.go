@@ -3,7 +3,7 @@ package k8s
 import (
 	"testing"
 
-	"k8s.io/kubernetes/pkg/client/unversioned"
+	"k8s.io/kubernetes/pkg/client/restclient"
 )
 
 func TestLocalClient(t *testing.T) {
@@ -20,7 +20,7 @@ func TestPodClient(t *testing.T) {
 	// A pod can't really be mocked efficiently without major filesystem
 	// manipulation. So we're testing fully only when this is running inside of
 	// a k8s pod.
-	if _, err := unversioned.InClusterConfig(); err != nil {
+	if _, err := restclient.InClusterConfig(); err != nil {
 		t.Skip("This can only be run inside Kubernetes. Skipping.")
 	}
 

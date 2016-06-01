@@ -184,7 +184,7 @@ func (me *Me) findPodInNamespaces(selector string) (*api.Pod, string, error) {
 	// Get the deis namespace. If it does not exist, get the default namespce.
 	s, err := labels.Parse(selector)
 	if err == nil {
-		ns, err := me.c.Namespaces().List(s, nil)
+		ns, err := me.c.Namespaces().List(api.ListOptions{LabelSelector: s})
 		if err != nil {
 			return nil, "default", err
 		}
