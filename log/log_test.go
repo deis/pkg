@@ -64,3 +64,18 @@ func TestAppendNewLine(t *testing.T) {
 	newStr := appendNewLine(str)
 	assert.Equal(t, newStr, str+"\n", "new string")
 }
+
+func TestDefaultLoggerSetStdout(t *testing.T) {
+	var b bytes.Buffer
+	DefaultLogger.SetStdout(&b)
+	Warn("hello world")
+	assert.Equal(t, b.String(), "hello world\n", "stdout output")
+}
+
+func TestDefaultLoggerSetStderr(t *testing.T) {
+	var b bytes.Buffer
+	DefaultLogger.SetStderr(&b)
+	DefaultLogger.SetDebug(true)
+	Debug("hello world")
+	assert.Equal(t, b.String(), addColor(DebugPrefix+" ", Cyan), "stderr output")
+}
