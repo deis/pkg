@@ -7,10 +7,10 @@ import (
 	"github.com/Masterminds/cookoo"
 	"github.com/Masterminds/cookoo/log"
 	"github.com/coreos/etcd/client"
-	"github.com/deis/pkg/k8s"
-	"k8s.io/kubernetes/pkg/api"
-
-	"k8s.io/kubernetes/pkg/labels"
+	"k8s.io/apimachinery/pkg/labels"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 // AddMember Add a new member to the cluster.
@@ -96,7 +96,12 @@ func RemoveStaleMembers(c cookoo.Context, p *cookoo.Params) (interface{}, cookoo
 	ns := p.Get("namespace", "default").(string)
 
 	// Should probably pass in the client from the context.
-	klient, err := k8s.PodClient()
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		log.Errf(c, "Could not get Kubernetes in-cluster config: %s", err)
+		return nil, err
+	}
+	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		log.Errf(c, "Could not create a Kubernetes client: %s", err)
 		return nil, err
@@ -124,7 +129,7 @@ func RemoveStaleMembers(c cookoo.Context, p *cookoo.Params) (interface{}, cookoo
 		log.Errf(c, "Selector failed to parse: %s", err)
 		return nil, err
 	}
-	pods, err := klient.Pods(ns).List(api.ListOptions{LabelSelector: labelSelector})
+	pods, err := clientset.CoreV1().Pods(ns).List(metav1.ListOptions{LabelSelector: labelSelector.String()})
 	if err != nil {
 		return nil, err
 	}

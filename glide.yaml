@@ -2,8 +2,7 @@ package: github.com/deis/pkg
 ignore:
 - appengine
 import:
-- package: k8s.io/kubernetes
-  version: v1.2.4
+- package: k8s.io/client-go
 - package: github.com/Masterminds/cookoo
   version: '>=1.3.0'
 - package: github.com/coreos/etcd
