@@ -21,3 +21,5 @@ import:
 - package: launchpad.net/gocheck
   repo: https://github.com/go-check/check
 - package: github.com/arschles/assert
+- package: speter.net/go/exp/math/dec/inf
+  repo: https://github.com/belua/inf
