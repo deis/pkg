@@ -17,11 +17,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/deis/pkg/k8s"
-
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/client/unversioned"
-	"k8s.io/kubernetes/pkg/labels"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	v1 "k8s.io/client-go/pkg/api/v1"
 )
 
 // DefaultNamespace is the Kubernetes default namespace.
@@ -44,7 +44,7 @@ type Me struct {
 	Labels                               map[string]string
 	Annotations                          map[string]string
 
-	c *unversioned.Client
+	c *kubernetes.Clientset
 }
 
 // FromEnv uses the environment to create a new Me.
@@ -69,11 +69,15 @@ func FromEnv() (*Me, error) {
 		Namespace: NamespaceFromEnv(),
 	}
 
-	client, err := k8s.PodClient()
+	config, err := rest.InClusterConfig()
 	if err != nil {
 		return me, err
 	}
-	me.c = client
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return me, err
+	}
+	me.c = clientset
 
 	if err := me.init(); err != nil {
 		return me, err
@@ -83,7 +87,7 @@ func FromEnv() (*Me, error) {
 }
 
 // Client returns an initialized Kubernetes API client.
-func (me *Me) Client() *unversioned.Client {
+func (me *Me) Client() *kubernetes.Clientset {
 	return me.c
 }
 
@@ -168,9 +172,9 @@ func (me *Me) init() error {
 }
 
 // loadPod loads a pod using the downward API.
-func (me *Me) loadPod() (*api.Pod, string, error) {
+func (me *Me) loadPod() (*v1.Pod, string, error) {
 	ns := NamespaceFromEnv()
-	p, err := me.c.Pods(ns).Get(me.Name)
+	p, err := me.c.CoreV1().Pods(ns).Get(me.Name, metav1.GetOptions{})
 	return p, ns, err
 }
 
@@ -180,16 +184,16 @@ func (me *Me) loadPod() (*api.Pod, string, error) {
 // string, and an error if something goes wrong.
 //
 // The selector must be a label selector.
-func (me *Me) findPodInNamespaces(selector string) (*api.Pod, string, error) {
+func (me *Me) findPodInNamespaces(selector string) (*v1.Pod, string, error) {
 	// Get the deis namespace. If it does not exist, get the default namespce.
 	s, err := labels.Parse(selector)
 	if err == nil {
-		ns, err := me.c.Namespaces().List(api.ListOptions{LabelSelector: s})
+		ns, err := me.c.CoreV1().Namespaces().List(metav1.ListOptions{LabelSelector: s.String()})
 		if err != nil {
 			return nil, "default", err
 		}
 		for _, n := range ns.Items {
-			p, err := me.c.Pods(n.Name).Get(me.Name)
+			p, err := me.c.CoreV1().Pods(n.Name).Get(me.Name, metav1.GetOptions{})
 
 			// If there is no error, we got a matching pod.
 			if err == nil {
@@ -199,7 +203,7 @@ func (me *Me) findPodInNamespaces(selector string) (*api.Pod, string, error) {
 	}
 
 	// If we get here, it's really the last ditch.
-	p, err := me.c.Pods("default").Get(me.Name)
+	p, err := me.c.CoreV1().Pods("default").Get(me.Name, metav1.GetOptions{})
 	return p, "default", err
 }
 
