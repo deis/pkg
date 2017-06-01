@@ -15,6 +15,7 @@ VERSION := 0.0.1-$(shell date "+%Y%m%d%H%M%S")
 LDFLAGS := "-s -X main.version=${VERSION}"
 
 NV_PKGS := $(shell glide nv)
+GO_PKGS := $(shell glide nv -x)
 
 all: build test
 
@@ -22,8 +23,18 @@ all: build test
 build:
 	go build ${NV_PKGS}
 
-test:
+test: test-style
 	go test ${NV_PKGS}
 
+test-style:
+	@if [ $(shell gofmt -e -l -s ${GO_PKGS}) ]; then \
+		echo "gofmt check failed:"; gofmt -e -d -s ${GO_PKGS}; exit 1; \
+	fi
+	@for i in . ${GO_PKGS}; do \
+		golint $$i; \
+	done
+	@for i in . ${GO_PKGS}; do \
+		go vet github.com/deis/pkg/$$i; \
+	done
 
-.PHONY: all build test
+.PHONY: all build test test-style
